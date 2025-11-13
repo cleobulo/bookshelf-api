@@ -11,10 +11,11 @@
   "author": "Cleóbulo B. Oliveira",
   "license": "ISC",
   "dependencies": {
-  "apollo-server-express": "^3.13.0",
+    "apollo-server-express": "^3.13.0",
     "graphql": "^16.8.0",
     "jsonwebtoken": "^8.5.1",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.2.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

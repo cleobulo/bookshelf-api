@@ -66,6 +66,24 @@ async function start() {
     }
   });
 
+  // REST endpoint to get authenticated user data (requires authentication)
+  app.get('/me', expressAuth, (req, res) => {
+    try {
+      const userId = req.user.userId;
+      const { getUserById } = require('./data');
+      const user = getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      return res.status(200).json({ id: user.id, email: user.email });
+    } catch (err) {
+      console.error('GET /me error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
   // REST endpoint to list all books (requires authentication)
   app.get('/books', expressAuth, (req, res) => {
     try {
@@ -81,14 +99,52 @@ async function start() {
   app.post('/books', expressAuth, (req, res) => {
     try {
       const { title, authorId } = req.body || {};
-      if (!title || !authorId) {
-        return res.status(400).json({ error: 'title and authorId are required' });
+      if (!title) {
+        return res.status(400).json({ error: 'title is required' });
       }
 
-      const newBook = createBook(title, authorId);
+      const userId = req.user.userId;
+      const newBook = createBook(title, authorId || null, userId);
       return res.status(201).json(newBook);
     } catch (err) {
       console.error('POST /books error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to update a book (requires authentication)
+  app.put('/books/:id', expressAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+      const { title, authorId } = req.body || {};
+      
+      if (!title) {
+        return res.status(400).json({ error: 'title is required' });
+      }
+
+      const { updateBook } = require('./data');
+      const updated = updateBook(id, title, authorId || null);
+      
+      if (!updated) {
+        return res.status(404).json({ error: 'Book not found' });
+      }
+
+      return res.status(200).json(updated);
+    } catch (err) {
+      console.error('PUT /books/:id error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to delete a book (requires authentication)
+  app.delete('/books/:id', expressAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+      const { deleteBook } = require('./data');
+      deleteBook(id);
+      return res.status(204).send();
+    } catch (err) {
+      console.error('DELETE /books/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
   });
