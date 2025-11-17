@@ -240,26 +240,95 @@ mutation {
 }
 ```
 
-#### Registrar novo usuário
+#### Listar notas de um livro (autenticado)
 ```graphql
-mutation {
-  register(email: "novo@exemplo.com", password: "senha123") {
+query {
+  notes(bookId: 1) {
     id
-    email
-    token
+    book_id
+    content
+    page_number
+    created_at
   }
 }
 ```
 
-#### Fazer login
+#### Criar nota (autenticado)
 ```graphql
 mutation {
-  login(email: "usuario@teste.com", password: "senha123") {
+  addNote(bookId: 1, content: "Personagem principal muito interessante", pageNumber: 45) {
     id
-    email
-    token
+    book_id
+    content
+    page_number
   }
 }
+```
+
+#### Atualizar nota (autenticado)
+```graphql
+mutation {
+  updateNote(id: 1, content: "Personagem principal muito interessante - desenvolvimento épico", pageNumber: 45) {
+    id
+    content
+    updated_at
+  }
+}
+```
+
+#### Deletar nota (autenticado)
+```graphql
+mutation {
+  deleteNote(id: 1)
+}
+```
+
+---
+
+## Endpoints REST para Notes
+
+### Listar notas de um livro (autenticado)
+```bash
+curl -s -H "Authorization: Bearer $TOKEN" http://localhost:4000/books/1/notes | jq
+```
+
+### Obter uma nota específica (autenticado)
+```bash
+curl -s -H "Authorization: Bearer $TOKEN" http://localhost:4000/notes/1 | jq
+```
+
+### Criar nova nota (autenticado)
+```bash
+curl -s -X POST http://localhost:4000/notes \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"bookId":1,"content":"Passagem marcante na página 42","pageNumber":42}' | jq
+```
+
+**Resposta (201):**
+```json
+{
+  "id": 1,
+  "book_id": 1,
+  "user_id": 1,
+  "content": "Passagem marcante na página 42",
+  "page_number": 42,
+  "created_at": "2025-11-17T10:30:00.000Z"
+}
+```
+
+### Atualizar nota (autenticado)
+```bash
+curl -s -X PUT http://localhost:4000/notes/1 \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"content":"Passagem muito marcante - refletir depois","pageNumber":42}' | jq
+```
+
+### Deletar nota (autenticado)
+```bash
+curl -s -X DELETE http://localhost:4000/notes/1 \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
@@ -290,6 +359,17 @@ mutation {
 | author_id | INTEGER (FK) | ID do autor |
 | user_id | INTEGER (FK) | ID do usuário que criou |
 | created_at | DATETIME | Data de criação |
+
+### Tabela: notes
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| id | INTEGER (PK) | ID único da nota |
+| book_id | INTEGER (FK) | ID do livro |
+| user_id | INTEGER (FK) | ID do usuário (privado) |
+| content | TEXT | Conteúdo da anotação |
+| page_number | INTEGER | Página (opcional) |
+| created_at | DATETIME | Data de criação |
+| updated_at | DATETIME | Última atualização |
 
 ---
 

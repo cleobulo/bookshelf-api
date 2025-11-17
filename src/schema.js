@@ -14,6 +14,16 @@ const typeDefs = `#graphql
     created_at: String
   }
   
+  type Note {
+    id: ID!
+    book_id: ID!
+    user_id: ID!
+    content: String!
+    page_number: Int
+    created_at: String
+    updated_at: String
+  }
+
   type Review {
     id: ID!
     text: String!
@@ -32,6 +42,7 @@ const typeDefs = `#graphql
     book(id: ID!): Book
     authors: [Author!]!
     author(id: ID!): Author
+    notes(bookId: ID!): [Note!]!
     me: User
   }
 
@@ -43,6 +54,10 @@ const typeDefs = `#graphql
     addAuthor(name: String!, bio: String): Author!
     updateAuthor(id: ID!, name: String!, bio: String): Author
     deleteAuthor(id: ID!): Boolean
+    
+    addNote(bookId: ID!, content: String!, pageNumber: Int): Note!
+    updateNote(id: ID!, content: String!, pageNumber: Int): Note
+    deleteNote(id: ID!): Boolean
     
     login(email: String!, password: String!): User!
     register(email: String!, password: String!): User!

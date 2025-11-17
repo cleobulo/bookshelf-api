@@ -35,6 +35,18 @@ function initDb() {
       FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE SET NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      book_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      content TEXT NOT NULL,
+      page_number INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
   `);
 }
 
@@ -151,6 +163,54 @@ function deleteAuthor(id) {
   stmt.run(id);
 }
 
+// ============ Notes ============
+
+function getNotesByBookId(bookId, userId) {
+  const stmt = db.prepare('SELECT * FROM notes WHERE book_id = ? AND user_id = ? ORDER BY created_at DESC');
+  return stmt.all(bookId, userId);
+}
+
+function getNoteById(id) {
+  const stmt = db.prepare('SELECT * FROM notes WHERE id = ?');
+  return stmt.get(id);
+}
+
+function createNote(bookId, userId, content, pageNumber) {
+  if (!bookId) throw new Error('bookId is required');
+  if (!userId) throw new Error('userId is required');
+  if (!content) throw new Error('content is required');
+  
+  const stmt = db.prepare('INSERT INTO notes (book_id, user_id, content, page_number) VALUES (?, ?, ?, ?)');
+  const result = stmt.run(bookId, userId, content, pageNumber || null);
+  
+  return { id: result.lastInsertRowid, book_id: bookId, user_id: userId, content, page_number: pageNumber || null, created_at: new Date().toISOString() };
+}
+
+function updateNote(id, userId, content, pageNumber) {
+  if (!content) throw new Error('content is required');
+  
+  // Verifica se a nota pertence ao usuário
+  const note = getNoteById(id);
+  if (!note || note.user_id !== userId) {
+    throw new Error('Unauthorized: you can only edit your own notes');
+  }
+  
+  const stmt = db.prepare('UPDATE notes SET content = ?, page_number = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+  stmt.run(content, pageNumber || null, id);
+  return getNoteById(id);
+}
+
+function deleteNote(id, userId) {
+  // Verifica se a nota pertence ao usuário
+  const note = getNoteById(id);
+  if (!note || note.user_id !== userId) {
+    throw new Error('Unauthorized: you can only delete your own notes');
+  }
+  
+  const stmt = db.prepare('DELETE FROM notes WHERE id = ?');
+  stmt.run(id);
+}
+
 // Fecha a conexão ao sair
 process.on('exit', () => db.close());
 
@@ -171,4 +231,9 @@ module.exports = {
   createAuthor,
   updateAuthor,
   deleteAuthor,
+  getNotesByBookId,
+  getNoteById,
+  createNote,
+  updateNote,
+  deleteNote,
 };

@@ -14,6 +14,11 @@ const {
   createAuthor,
   updateAuthor,
   deleteAuthor,
+  getNotesByBookId,
+  getNoteById,
+  createNote,
+  updateNote,
+  deleteNote,
 } = require('./db');
 
 module.exports = {
@@ -32,4 +37,9 @@ module.exports = {
   createAuthor,
   updateAuthor,
   deleteAuthor,
+  getNotesByBookId,
+  getNoteById,
+  createNote,
+  updateNote,
+  deleteNote,
 };

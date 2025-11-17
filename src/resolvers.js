@@ -13,7 +13,13 @@ const {
   getAuthorById, 
   createAuthor, 
   updateAuthor, 
-  deleteAuthor } = require('./data');
+  deleteAuthor,
+  getNotesByBookId,
+  getNoteById,
+  createNote,
+  updateNote,
+  deleteNote
+} = require('./data');
 
 const resolvers = {
   Query: {
@@ -21,6 +27,14 @@ const resolvers = {
     book: (_, { id }) => getBookById(id),
     authors: () => getAuthors(),
     author: (_, { id }) => getAuthorById(id),
+    notes: async (_, { bookId }, context) => {
+      try {
+        const payload = authenticate(context);
+        return getNotesByBookId(bookId, payload.userId);
+      } catch (error) {
+        throw new Error('Unauthorized');
+      }
+    },
     me: async (_, __, context) => {
       try {
         const payload = authenticate(context);
@@ -59,6 +73,31 @@ const resolvers = {
     deleteAuthor: (_, { id }) => {
       deleteAuthor(id);
       return true;
+    },
+    addNote: async (_, { bookId, content, pageNumber }, context) => {
+      try {
+        const payload = authenticate(context);
+        return createNote(bookId, payload.userId, content, pageNumber || null);
+      } catch (error) {
+        throw new Error(error.message || 'Error creating note');
+      }
+    },
+    updateNote: async (_, { id, content, pageNumber }, context) => {
+      try {
+        const payload = authenticate(context);
+        return updateNote(id, payload.userId, content, pageNumber || null);
+      } catch (error) {
+        throw new Error(error.message || 'Error updating note');
+      }
+    },
+    deleteNote: async (_, { id }, context) => {
+      try {
+        const payload = authenticate(context);
+        deleteNote(id, payload.userId);
+        return true;
+      } catch (error) {
+        throw new Error(error.message || 'Error deleting note');
+      }
     },
     login: async (_, { email, password }) => {
       const user = await validateUserCredentials(email, password);

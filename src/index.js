@@ -12,7 +12,12 @@ const {
   getAuthorById, 
   createAuthor, 
   updateAuthor, 
-  deleteAuthor } = require('./data');
+  deleteAuthor,
+  getNotesByBookId,
+  getNoteById,
+  createNote,
+  updateNote,
+  deleteNote } = require('./data');
 const { generateToken, expressAuth } = require('./auth');
 
 async function start() {
@@ -234,6 +239,89 @@ async function start() {
       return res.status(204).send();
     } catch (err) {
       console.error('DELETE /authors/:id error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // ============ Notes Endpoints ============
+
+  // REST endpoint to list notes for a book (requires authentication)
+  app.get('/books/:bookId/notes', expressAuth, (req, res) => {
+    try {
+      const { bookId } = req.params;
+      const notes = getNotesByBookId(bookId, req.user.userId);
+      return res.status(200).json(notes);
+    } catch (err) {
+      console.error('GET /books/:bookId/notes error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to get a single note (requires authentication)
+  app.get('/notes/:id', expressAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+      const note = getNoteById(id);
+      
+      if (!note) {
+        return res.status(404).json({ error: 'Note not found' });
+      }
+      
+      // Verifica se o note pertence ao usuário
+      if (note.user_id !== req.user.userId) {
+        return res.status(403).json({ error: 'Forbidden: you can only view your own notes' });
+      }
+      
+      return res.status(200).json(note);
+    } catch (err) {
+      console.error('GET /notes/:id error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to create a note (requires authentication)
+  app.post('/notes', expressAuth, (req, res) => {
+    try {
+      const { bookId, content, pageNumber } = req.body || {};
+      
+      if (!bookId || !content) {
+        return res.status(400).json({ error: 'bookId and content are required' });
+      }
+
+      const newNote = createNote(bookId, req.user.userId, content, pageNumber || null);
+      return res.status(201).json(newNote);
+    } catch (err) {
+      console.error('POST /notes error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to update a note (requires authentication)
+  app.put('/notes/:id', expressAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+      const { content, pageNumber } = req.body || {};
+      
+      if (!content) {
+        return res.status(400).json({ error: 'content is required' });
+      }
+
+      const updated = updateNote(id, req.user.userId, content, pageNumber || null);
+      return res.status(200).json(updated);
+    } catch (err) {
+      console.error('PUT /notes/:id error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to delete a note (requires authentication)
+  app.delete('/notes/:id', expressAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+      deleteNote(id, req.user.userId);
+      return res.status(204).send();
+    } catch (err) {
+      console.error('DELETE /notes/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
   });
