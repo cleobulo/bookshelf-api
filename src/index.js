@@ -2,7 +2,17 @@ const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
-const { createUser, findUserByEmail, validateUserCredentials, getBooks, createBook } = require('./data');
+const { 
+  createUser, 
+  findUserByEmail, 
+  validateUserCredentials, 
+  getBooks, 
+  createBook, 
+  getAuthors, 
+  getAuthorById, 
+  createAuthor, 
+  updateAuthor, 
+  deleteAuthor } = require('./data');
 const { generateToken, expressAuth } = require('./auth');
 
 async function start() {
@@ -145,6 +155,85 @@ async function start() {
       return res.status(204).send();
     } catch (err) {
       console.error('DELETE /books/:id error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // ============ Authors Endpoints ============
+
+  // REST endpoint to list all authors
+  app.get('/authors', (req, res) => {
+    try {
+      const list = getAuthors();
+      return res.status(200).json(list);
+    } catch (err) {
+      console.error('GET /authors error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to get a single author by ID
+  app.get('/authors/:id', (req, res) => {
+    try {
+      const { id } = req.params;
+      const author = getAuthorById(id);
+      if (!author) {
+        return res.status(404).json({ error: 'Author not found' });
+      }
+      return res.status(200).json(author);
+    } catch (err) {
+      console.error('GET /authors/:id error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to create a new author (requires authentication)
+  app.post('/authors', expressAuth, (req, res) => {
+    try {
+      const { name, bio } = req.body || {};
+      if (!name) {
+        return res.status(400).json({ error: 'name is required' });
+      }
+
+      const newAuthor = createAuthor(name, bio || null);
+      return res.status(201).json(newAuthor);
+    } catch (err) {
+      console.error('POST /authors error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to update an author (requires authentication)
+  app.put('/authors/:id', expressAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name, bio } = req.body || {};
+      
+      if (!name) {
+        return res.status(400).json({ error: 'name is required' });
+      }
+
+      const updated = updateAuthor(id, name, bio || null);
+      
+      if (!updated) {
+        return res.status(404).json({ error: 'Author not found' });
+      }
+
+      return res.status(200).json(updated);
+    } catch (err) {
+      console.error('PUT /authors/:id error:', err);
+      return res.status(500).json({ error: err.message || 'Internal server error' });
+    }
+  });
+
+  // REST endpoint to delete an author (requires authentication)
+  app.delete('/authors/:id', expressAuth, (req, res) => {
+    try {
+      const { id } = req.params;
+      deleteAuthor(id);
+      return res.status(204).send();
+    } catch (err) {
+      console.error('DELETE /authors/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
   });

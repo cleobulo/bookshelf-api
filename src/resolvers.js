@@ -1,10 +1,26 @@
 const { generateToken, authenticate } = require('./auth');
-const { findUserByEmail, createUser, validateUserCredentials, getUserById } = require('./data');
+const { 
+  findUserByEmail, 
+  createUser, 
+  validateUserCredentials, 
+  getUserById, 
+  getBooks, 
+  getBookById, 
+  createBook, 
+  updateBook, 
+  deleteBook, 
+  getAuthors, 
+  getAuthorById, 
+  createAuthor, 
+  updateAuthor, 
+  deleteAuthor } = require('./data');
 
 const resolvers = {
   Query: {
-    books: () => books,
-    book: (_, { id }) => (books.find(b => b.id === id)),
+    books: () => getBooks(),
+    book: (_, { id }) => getBookById(id),
+    authors: () => getAuthors(),
+    author: (_, { id }) => getAuthorById(id),
     me: async (_, __, context) => {
       try {
         const payload = authenticate(context);
@@ -12,17 +28,37 @@ const resolvers = {
         if (!found) {
           throw new Error('Unauthorized');
         }
-        return { id: found.id, email: found.email, token: '' };
+        return { id: found.id, email: found.email };
       } catch (error) {
         throw new Error('Unauthorized');
       }
     },
   },
   Mutation: {
-    addBook: (_, { title, authorId }) => {
-      const newBook = { id: String(books.length + 1), title, authorId };
-      books.push(newBook);
-      return newBook;
+    addBook: async (_, { title, authorId }, context) => {
+      try {
+        const payload = authenticate(context);
+        return createBook(title, authorId || null, payload.userId);
+      } catch (error) {
+        throw new Error('Unauthorized');
+      }
+    },
+    updateBook: (_, { id, title, authorId }) => {
+      return updateBook(id, title, authorId || null);
+    },
+    deleteBook: (_, { id }) => {
+      deleteBook(id);
+      return true;
+    },
+    addAuthor: (_, { name, bio }) => {
+      return createAuthor(name, bio || null);
+    },
+    updateAuthor: (_, { id, name, bio }) => {
+      return updateAuthor(id, name, bio || null);
+    },
+    deleteAuthor: (_, { id }) => {
+      deleteAuthor(id);
+      return true;
     },
     login: async (_, { email, password }) => {
       const user = await validateUserCredentials(email, password);

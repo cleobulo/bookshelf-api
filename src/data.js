@@ -8,6 +8,12 @@ const {
   createBook,
   updateBook,
   deleteBook,
+  getAuthors,
+  getAuthorById,
+  getAuthorByName,
+  createAuthor,
+  updateAuthor,
+  deleteAuthor,
 } = require('./db');
 
 module.exports = {
@@ -20,4 +26,10 @@ module.exports = {
   createBook,
   updateBook,
   deleteBook,
+  getAuthors,
+  getAuthorById,
+  getAuthorByName,
+  createAuthor,
+  updateAuthor,
+  deleteAuthor,
 };

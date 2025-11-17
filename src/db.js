@@ -19,12 +19,20 @@ function initDb() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS authors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      bio TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS books (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       author_id INTEGER,
       user_id INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE SET NULL,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
   `);
@@ -99,6 +107,50 @@ function deleteBook(id) {
   stmt.run(id);
 }
 
+// ============ Authors ============
+
+function getAuthors() {
+  const stmt = db.prepare('SELECT * FROM authors ORDER BY name ASC');
+  return stmt.all();
+}
+
+function getAuthorById(id) {
+  const stmt = db.prepare('SELECT * FROM authors WHERE id = ?');
+  return stmt.get(id);
+}
+
+function getAuthorByName(name) {
+  const stmt = db.prepare('SELECT * FROM authors WHERE name = ?');
+  return stmt.get(name);
+}
+
+function createAuthor(name, bio) {
+  if (!name) throw new Error('name is required');
+  
+  const existing = getAuthorByName(name);
+  if (existing) {
+    throw new Error('Author already exists');
+  }
+  
+  const stmt = db.prepare('INSERT INTO authors (name, bio) VALUES (?, ?)');
+  const result = stmt.run(name, bio || null);
+  
+  return { id: result.lastInsertRowid, name, bio: bio || null };
+}
+
+function updateAuthor(id, name, bio) {
+  if (!name) throw new Error('name is required');
+  
+  const stmt = db.prepare('UPDATE authors SET name = ?, bio = ? WHERE id = ?');
+  stmt.run(name, bio || null, id);
+  return getAuthorById(id);
+}
+
+function deleteAuthor(id) {
+  const stmt = db.prepare('DELETE FROM authors WHERE id = ?');
+  stmt.run(id);
+}
+
 // Fecha a conexão ao sair
 process.on('exit', () => db.close());
 
@@ -113,4 +165,10 @@ module.exports = {
   createBook,
   updateBook,
   deleteBook,
+  getAuthors,
+  getAuthorById,
+  getAuthorByName,
+  createAuthor,
+  updateAuthor,
+  deleteAuthor,
 };
