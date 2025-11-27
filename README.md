@@ -74,6 +74,55 @@ Quando a validação falha, a API retorna **400 Bad Request** com detalhes:
 
 ---
 
+## Arquitetura e Padrões
+
+### Padrão MVC (Model-View-Controller)
+
+A API segue o padrão **MVC** com separação de responsabilidades:
+
+- **Models** — `src/db.js` (operações no banco de dados)
+- **Views** — GraphQL schema + REST endpoints
+- **Controllers** — `src/controllers/` (lógica de negócio)
+
+### Organização de Controllers
+
+Cada controller é responsável por uma entidade específica:
+
+```
+src/controllers/
+├── userController.js      → Autenticação e usuário
+├── bookController.js      → Gerenciamento de livros
+├── authorController.js    → Gerenciamento de autores
+├── noteController.js      → Notas privadas do usuário
+└── index.js               → Re-exporta todos
+```
+
+Cada controller:
+- ✅ Valida entrada via `src/validation.js`
+- ✅ Trata erros e retorna status HTTP apropriado
+- ✅ Registra errors em console para debugging
+- ✅ Usa middleware de autenticação quando necessário
+
+### Fluxo de Requisição
+
+```
+Request HTTP
+    ↓
+Express Route + expressAuth middleware (se autenticado)
+    ↓
+Controller (userController, bookController, etc)
+    ↓
+Validation (validateUserRegistration, validateBook, etc)
+    ↓
+Data Layer (src/data.js → src/db.js)
+    ↓
+SQLite Database
+    ↓
+Response JSON
+```
+
+---
+
 ## Autenticação
 
 A API usa **JWT (JSON Web Tokens)** para proteger endpoints autenticados.
@@ -423,17 +472,32 @@ curl -s -X DELETE http://localhost:4000/notes/1 \
 ```
 bookshelf-api/
 ├── src/
-│   ├── index.js           # Entry point, Express + Apollo
-│   ├── schema.js          # GraphQL schema (typeDefs)
-│   ├── resolvers.js       # GraphQL resolvers
-│   ├── auth.js            # JWT + middleware de autenticação
-│   ├── data.js            # Re-exporta funções do banco
-│   └── db.js              # SQLite database e operações CRUD
-├── bookshelf.db           # Arquivo SQLite (criado automaticamente)
+│   ├── controllers/                    # Controllers organizados por entidade
+│   │   ├── index.js                   # Re-exporta todos os controllers
+│   │   ├── userController.js          # Register, login, me
+│   │   ├── bookController.js          # CRUD de livros
+│   │   ├── authorController.js        # CRUD de autores
+│   │   └── noteController.js          # CRUD de notas
+│   ├── index.js                       # Entry point, Express + Apollo
+│   ├── schema.js                      # GraphQL schema (typeDefs)
+│   ├── resolvers.js                   # GraphQL resolvers
+│   ├── auth.js                        # JWT + middleware de autenticação
+│   ├── data.js                        # Re-exporta funções do banco
+│   ├── db.js                          # SQLite database e operações CRUD
+│   └── validation.js                  # Validações de entrada (JS puro)
+├── test/                              # Testes automatizados (futuro)
+├── bookshelf.db                       # Arquivo SQLite (criado automaticamente)
 ├── package.json
 ├── README.md
 └── LICENSE
 ```
+
+### Detalhes dos Controllers
+
+- **userController.js** — Autenticação (register, login) e dados do usuário
+- **bookController.js** — Gerenciamento completo de livros (CREATE, READ, UPDATE, DELETE)
+- **authorController.js** — Gerenciamento completo de autores (CREATE, READ, UPDATE, DELETE)
+- **noteController.js** — Gerenciamento de notas privadas do usuário (CREATE, READ, UPDATE, DELETE)
 
 ---
 
@@ -463,13 +527,15 @@ npm start
 ## Melhorias Futuras
 
 - [x] Validação de entrada (implementada)
+- [x] Desmembração de controllers em arquivos individuais (implementada)
+- [ ] Testes automatizados (Jest + Supertest)
 - [ ] Paginação em listas
 - [ ] Filtros avançados
 - [ ] Relacionamentos completos GraphQL
-- [ ] Testes automatizados (Jest)
 - [ ] Rate limiting
 - [ ] Logging estruturado
 - [ ] Swagger/OpenAPI docs
+- [ ] Docker + docker-compose
 
 ---
 
