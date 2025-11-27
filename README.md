@@ -140,6 +140,36 @@ SQLite Database
 Response JSON
 ```
 
+### Sistema de Validações
+
+A API implementa um sistema robusto de validações **organizado por entidade**:
+
+```
+src/validations/
+├── commonValidations.js     → Utilitários compartilhados
+├── userValidations.js       → Valida email, senha
+├── bookValidations.js       → Valida título, authorId
+├── authorValidations.js     → Valida nome, bio
+├── noteValidations.js       → Valida conteúdo, bookId
+└── errors/
+    └── ValidationError.js   → Classe de erro personalizada
+```
+
+**Características:**
+- ✅ Validações em **JavaScript puro** (sem dependências externas)
+- ✅ Mensagens de erro em **português**
+- ✅ Informação de qual **campo falhou**
+- ✅ Reutilização de validações comuns (EMAIL_REGEX, validateId)
+- ✅ Tratamento centralizado de erros
+
+**Exemplo de resposta com erro:**
+```json
+{
+  "error": "Senha deve ter no mínimo 6 caracteres",
+  "field": "password"
+}
+```
+
 ---
 
 ## Autenticação
@@ -503,12 +533,21 @@ bookshelf-api/
 │   │   ├── bookResolvers.js           # Queries e mutations de livros
 │   │   ├── authorResolvers.js         # Queries e mutations de autores
 │   │   └── noteResolvers.js           # Queries e mutations de notas
+│   ├── validations/                   # Validações organizadas por entidade
+│   │   ├── index.js                   # Re-exporta todos os validadores
+│   │   ├── errors/
+│   │   │   ├── ValidationError.js     # Classe de erro personalizada
+│   │   │   └── index.js               # Re-exporta ValidationError
+│   │   ├── commonValidations.js       # Email regex, validateId
+│   │   ├── userValidations.js         # Validações de user
+│   │   ├── bookValidations.js         # Validações de book
+│   │   ├── authorValidations.js       # Validações de author
+│   │   └── noteValidations.js         # Validações de note
 │   ├── index.js                       # Entry point, Express + Apollo
 │   ├── schema.js                      # GraphQL schema (typeDefs)
 │   ├── auth.js                        # JWT + middleware de autenticação
 │   ├── data.js                        # Re-exporta funções do banco
-│   ├── db.js                          # SQLite database e operações CRUD
-│   └── validation.js                  # Validações de entrada (JS puro)
+│   └── db.js                          # SQLite database e operações CRUD
 ├── test/                              # Testes automatizados (futuro)
 ├── bookshelf.db                       # Arquivo SQLite (criado automaticamente)
 ├── package.json
@@ -526,7 +565,19 @@ bookshelf-api/
 
 **Resolvers** (`src/resolvers/`)
 - **userResolvers.js** — GraphQL queries (me) e mutations (login, register)
-- **bookResolvers.js** — GraphQL queries (books, book) e mutations (addBook, updateBook, deleteBook)
+- **bookResolvers.js** — GraphQL queries (books, book) e mutations (add/update/delete)
+- **authorResolvers.js** — GraphQL queries (authors, author) e mutations (add/update/delete)
+- **noteResolvers.js** — GraphQL queries (notes) e mutations (add/update/delete)
+
+**Validações** (`src/validations/`)
+- **commonValidations.js** — Utilitários compartilhados (EMAIL_REGEX, validateId)
+- **userValidations.js** — Valida registro e login de usuários
+- **bookValidations.js** — Valida criação/atualização de livros
+- **authorValidations.js** — Valida criação/atualização de autores
+- **noteValidations.js** — Valida criação/atualização de notas
+- **errors/ValidationError.js** — Classe personalizada para erros de validação
+
+---- **bookResolvers.js** — GraphQL queries (books, book) e mutations (addBook, updateBook, deleteBook)
 - **authorResolvers.js** — GraphQL queries (authors, author) e mutations (addAuthor, updateAuthor, deleteAuthor)
 - **noteResolvers.js** — GraphQL queries (notes) e mutations (addNote, updateNote, deleteNote)
 
@@ -560,6 +611,7 @@ npm start
 - [x] Validação de entrada (implementada)
 - [x] Desmembração de controllers em arquivos individuais (implementada)
 - [x] Desmembração de resolvers em arquivos individuais (implementada)
+- [x] Desmembração de validações em arquivos individuais (implementada)
 - [ ] Testes automatizados (Jest + Supertest)
 - [ ] Paginação em listas
 - [ ] Filtros avançados
