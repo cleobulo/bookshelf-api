@@ -1,5 +1,5 @@
 const { getBooks, createBook, updateBook, deleteBook } = require('../data');
-const { ValidationError, validateBook, validateId } = require('../validation');
+const { ValidationError, validateBook, validateId } = require('../validations');
 
 /**
  * List all books (authenticated)

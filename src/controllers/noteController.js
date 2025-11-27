@@ -1,5 +1,5 @@
 const { getNotesByBookId, getNoteById, createNote, updateNote, deleteNote } = require('../data');
-const { ValidationError, validateNote, validateId } = require('../validation');
+const { ValidationError, validateNote, validateId } = require('../validations');
 
 /**
  * List all notes for a specific book (authenticated)

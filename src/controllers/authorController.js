@@ -1,5 +1,5 @@
 const { getAuthors, getAuthorById, createAuthor, updateAuthor, deleteAuthor } = require('../data');
-const { ValidationError, validateAuthor, validateId } = require('../validation');
+const { ValidationError, validateAuthor, validateId } = require('../validations');
 
 /**
  * List all authors (public)

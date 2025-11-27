@@ -1,6 +1,6 @@
 const { generateToken } = require('../auth');
 const { createUser, findUserByEmail, validateUserCredentials, getUserById } = require('../data');
-const { ValidationError, validateUserRegistration, validateUserLogin } = require('../validation');
+const { ValidationError, validateUserRegistration, validateUserLogin } = require('../validations');
 
 /**
  * Register a new user
