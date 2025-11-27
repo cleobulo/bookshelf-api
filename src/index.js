@@ -21,7 +21,7 @@ const {
   createNoteController,
   updateNoteController,
   deleteNoteController,
- } = require('./controllers');
+} = require('./controllers');
 
 
 async function loadMethods(app) {
