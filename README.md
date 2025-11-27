@@ -37,6 +37,43 @@ O servidor estará disponível em:
 - **REST**: http://localhost:4000
 - **GraphQL**: http://localhost:4000/graphql
 
+## Validação de Entrada
+
+A API implementa **validação completa de entrada** em JavaScript puro, sem dependências externas. Todas as requisições são validadas antes de serem processadas.
+
+### Regras de Validação
+
+#### Usuários
+- **Email**: Obrigatório, formato válido, máx. 255 caracteres
+- **Senha**: Obrigatório, mínimo 6 caracteres, máx. 255 caracteres
+- **Confirmação**: Senhas devem corresponder (no registro)
+
+#### Livros
+- **Título**: Obrigatório, string não-vazia, máx. 255 caracteres
+- **ID do Autor**: Obrigatório, número inteiro positivo
+
+#### Autores
+- **Nome**: Obrigatório, string não-vazia, máx. 255 caracteres
+- **Bio**: Opcional, máx. 1000 caracteres
+
+#### Notas
+- **Conteúdo**: Obrigatório, string não-vazia, máx. 5000 caracteres
+- **ID do Livro**: Obrigatório, número inteiro positivo
+- **Número da Página**: Opcional, número inteiro positivo
+
+### Resposta de Erro de Validação
+
+Quando a validação falha, a API retorna **400 Bad Request** com detalhes:
+
+```json
+{
+  "error": "Email é obrigatório",
+  "field": "email"
+}
+```
+
+---
+
 ## Autenticação
 
 A API usa **JWT (JSON Web Tokens)** para proteger endpoints autenticados.
@@ -46,7 +83,7 @@ A API usa **JWT (JSON Web Tokens)** para proteger endpoints autenticados.
 ```bash
 curl -s -X POST http://localhost:4000/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"usuario@teste.com","password":"senha123"}' | jq
+  -d '{"email":"usuario@teste.com","password":"senha123","passwordConfirm":"senha123"}' | jq
 ```
 
 **Resposta (201):**
@@ -55,6 +92,14 @@ curl -s -X POST http://localhost:4000/register \
   "id": 1,
   "email": "usuario@teste.com",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Erro - Validação falhou (400):**
+```json
+{
+  "error": "Formato de email inválido",
+  "field": "email"
 }
 ```
 
@@ -409,13 +454,15 @@ npm start
 - 🔐 **Senhas**: Sempre com hash bcryptjs (salt 8)
 - 🎫 **Tokens JWT**: Expiram em 7 dias
 - 🔑 **SECRET_KEY**: Mude em produção!
-- 📍 **Validação**: Implementar mais robustez com Joi/Zod
+- ✅ **Validação**: Implementada em todos os endpoints (email, senha, tamanho de strings, tipos)
 - 🔒 **HTTPS**: Use em produção
+- 👤 **Notas Privadas**: Usuários só acessam suas próprias notas
 
 ---
 
 ## Melhorias Futuras
 
+- [x] Validação de entrada (implementada)
 - [ ] Paginação em listas
 - [ ] Filtros avançados
 - [ ] Relacionamentos completos GraphQL
