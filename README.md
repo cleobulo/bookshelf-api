@@ -10,8 +10,11 @@ Uma API GraphQL + REST para gerenciar livros, autores e usuários, construída c
 - **SQLite** (better-sqlite3) — banco de dados
 - **JWT** — autenticação com tokens
 - **bcryptjs** — hash seguro de senhas
+- **Docker** — containerização e deployment
 
 ## Instalação
+
+### Opção 1: Local (Node.js)
 
 1. Clone ou acesse o repositório:
 ```bash
@@ -36,6 +39,28 @@ npm run dev
 O servidor estará disponível em:
 - **REST**: http://localhost:4000
 - **GraphQL**: http://localhost:4000/graphql
+
+### Opção 2: Docker
+
+#### Desenvolvimento (com hot-reload)
+
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
+
+O servidor estará disponível em http://localhost:4000 com recarga automática ao alterar arquivos.
+
+#### Produção
+
+```bash
+docker-compose up -d
+```
+
+A API ficará disponível em http://localhost:4000 com otimizações e verificações de saúde.
+
+**Para mais detalhes sobre Docker, veja [DOCKER.md](./DOCKER.md)**
+
+---
 
 ## Validação de Entrada
 
@@ -612,6 +637,7 @@ npm start
 - [x] Desmembração de controllers em arquivos individuais (implementada)
 - [x] Desmembração de resolvers em arquivos individuais (implementada)
 - [x] Desmembração de validações em arquivos individuais (implementada)
+- [x] Docker + docker-compose (implementado)
 - [ ] Testes automatizados (Jest + Supertest)
 - [ ] Paginação em listas
 - [ ] Filtros avançados
@@ -619,7 +645,6 @@ npm start
 - [ ] Logging estruturado (Winston/Pino)
 - [ ] Rate limiting (express-rate-limit)
 - [ ] Swagger/OpenAPI docs
-- [ ] Docker + docker-compose
 
 ---
 
