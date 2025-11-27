@@ -103,6 +103,25 @@ Cada controller:
 - ✅ Registra errors em console para debugging
 - ✅ Usa middleware de autenticação quando necessário
 
+### Organização de GraphQL Resolvers
+
+Cada resolver é responsável por uma entidade específica:
+
+```
+src/resolvers/
+├── userResolvers.js       → Queries (me) e Mutations (login, register)
+├── bookResolvers.js       → Queries (books, book) e Mutations (add/update/delete)
+├── authorResolvers.js     → Queries (authors, author) e Mutations (add/update/delete)
+├── noteResolvers.js       → Queries (notes) e Mutations (add/update/delete)
+└── index.js               → Merge de todos os resolvers
+```
+
+Cada resolver:
+- ✅ Implementa Query e/ou Mutation para uma entidade
+- ✅ Usa `authenticate()` quando necessário
+- ✅ Chama funções do data layer (`src/data.js`)
+- ✅ Retorna dados tipados conforme schema GraphQL
+
 ### Fluxo de Requisição
 
 ```
@@ -478,9 +497,14 @@ bookshelf-api/
 │   │   ├── bookController.js          # CRUD de livros
 │   │   ├── authorController.js        # CRUD de autores
 │   │   └── noteController.js          # CRUD de notas
+│   ├── resolvers/                     # GraphQL resolvers organizados por entidade
+│   │   ├── index.js                   # Merge de todos os resolvers
+│   │   ├── userResolvers.js           # Login, register, me
+│   │   ├── bookResolvers.js           # Queries e mutations de livros
+│   │   ├── authorResolvers.js         # Queries e mutations de autores
+│   │   └── noteResolvers.js           # Queries e mutations de notas
 │   ├── index.js                       # Entry point, Express + Apollo
 │   ├── schema.js                      # GraphQL schema (typeDefs)
-│   ├── resolvers.js                   # GraphQL resolvers
 │   ├── auth.js                        # JWT + middleware de autenticação
 │   ├── data.js                        # Re-exporta funções do banco
 │   ├── db.js                          # SQLite database e operações CRUD
@@ -492,12 +516,19 @@ bookshelf-api/
 └── LICENSE
 ```
 
-### Detalhes dos Controllers
+### Detalhes dos Componentes
 
+**Controllers** (`src/controllers/`)
 - **userController.js** — Autenticação (register, login) e dados do usuário
 - **bookController.js** — Gerenciamento completo de livros (CREATE, READ, UPDATE, DELETE)
 - **authorController.js** — Gerenciamento completo de autores (CREATE, READ, UPDATE, DELETE)
 - **noteController.js** — Gerenciamento de notas privadas do usuário (CREATE, READ, UPDATE, DELETE)
+
+**Resolvers** (`src/resolvers/`)
+- **userResolvers.js** — GraphQL queries (me) e mutations (login, register)
+- **bookResolvers.js** — GraphQL queries (books, book) e mutations (addBook, updateBook, deleteBook)
+- **authorResolvers.js** — GraphQL queries (authors, author) e mutations (addAuthor, updateAuthor, deleteAuthor)
+- **noteResolvers.js** — GraphQL queries (notes) e mutations (addNote, updateNote, deleteNote)
 
 ---
 
@@ -528,12 +559,13 @@ npm start
 
 - [x] Validação de entrada (implementada)
 - [x] Desmembração de controllers em arquivos individuais (implementada)
+- [x] Desmembração de resolvers em arquivos individuais (implementada)
 - [ ] Testes automatizados (Jest + Supertest)
 - [ ] Paginação em listas
 - [ ] Filtros avançados
 - [ ] Relacionamentos completos GraphQL
-- [ ] Rate limiting
-- [ ] Logging estruturado
+- [ ] Logging estruturado (Winston/Pino)
+- [ ] Rate limiting (express-rate-limit)
 - [ ] Swagger/OpenAPI docs
 - [ ] Docker + docker-compose
 
