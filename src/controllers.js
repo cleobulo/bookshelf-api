@@ -15,14 +15,14 @@ const {
   createNote,
   updateNote,
   deleteNote } = require('./data');
+const { ValidationError, validateUserRegistration, validateUserLogin } = require('./validation');
 
 // Registra um novo usuário
 const registerUserController = async (req, res) => {
     try {
-      const { email, password } = req.body || {};
-      if (!email || !password) {
-        return res.status(400).json({ error: 'email and password are required' });
-      }
+      validateUserRegistration(req.body || {});
+
+      const { email, password } = req.body;
 
       const existing = findUserByEmail(email);
       if (existing) {
@@ -34,6 +34,9 @@ const registerUserController = async (req, res) => {
 
       return res.status(201).json({ id: newUser.id, email: newUser.email, token });
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('POST /register error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -42,10 +45,9 @@ const registerUserController = async (req, res) => {
 // Login de usuário existente
 const loginUserController = async (req, res) => {
     try {
-      const { email, password } = req.body || {};
-      if (!email || !password) {
-        return res.status(400).json({ error: 'email and password are required' });
-      }
+      validateUserLogin(req.body || {});
+
+      const { email, password } = req.body;
 
       const user = await validateUserCredentials(email, password);
       if (!user) {
@@ -55,6 +57,9 @@ const loginUserController = async (req, res) => {
       const token = generateToken(user.id, user.email);
       return res.status(200).json({ id: user.id, email: user.email, token });
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('POST /login error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -92,15 +97,17 @@ const listAllBooksController = (req, res) => {
 // Cria um novo livro
 const createBookController = (req, res) => {
     try {
-      const { title, authorId } = req.body || {};
-      if (!title) {
-        return res.status(400).json({ error: 'title is required' });
-      }
+      const { validateBook, validateId } = require('./validation');
+      validateBook(req.body || {});
 
+      const { title, authorId } = req.body;
       const userId = req.user.userId;
       const newBook = createBook(title, authorId || null, userId);
       return res.status(201).json(newBook);
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('POST /books error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -109,13 +116,12 @@ const createBookController = (req, res) => {
 // Atualiza um registro existente
 const updateBookController = (req, res) => {
     try {
+      const { validateBook, validateId } = require('./validation');
       const { id } = req.params;
-      const { title, authorId } = req.body || {};
-      
-      if (!title) {
-        return res.status(400).json({ error: 'title is required' });
-      }
+      validateId(id);
+      validateBook(req.body || {});
 
+      const { title, authorId } = req.body;
       const { updateBook } = require('./data');
       const updated = updateBook(id, title, authorId || null);
       
@@ -125,6 +131,9 @@ const updateBookController = (req, res) => {
 
       return res.status(200).json(updated);
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('PUT /books/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -133,11 +142,16 @@ const updateBookController = (req, res) => {
 // Deleta um registro existente
 const deleteBookController = (req, res) => {
     try {
+      const { validateId } = require('./validation');
       const { id } = req.params;
+      validateId(id);
       const { deleteBook } = require('./data');
       deleteBook(id);
       return res.status(204).send();
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('DELETE /books/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -172,14 +186,16 @@ const getAuthorByIdController = (req, res) => {
 // Criar um novo autor
 const createAuthorController = (req, res) => {
     try {
-      const { name, bio } = req.body || {};
-      if (!name) {
-        return res.status(400).json({ error: 'name is required' });
-      }
+      const { validateAuthor } = require('./validation');
+      validateAuthor(req.body || {});
 
+      const { name, bio } = req.body;
       const newAuthor = createAuthor(name, bio || null);
       return res.status(201).json(newAuthor);
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('POST /authors error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -188,13 +204,12 @@ const createAuthorController = (req, res) => {
 // Atualizar um autor existente
 const updateAuthorController = (req, res) => {
     try {
+      const { validateAuthor, validateId } = require('./validation');
       const { id } = req.params;
-      const { name, bio } = req.body || {};
-      
-      if (!name) {
-        return res.status(400).json({ error: 'name is required' });
-      }
+      validateId(id);
+      validateAuthor(req.body || {});
 
+      const { name, bio } = req.body;
       const updated = updateAuthor(id, name, bio || null);
       
       if (!updated) {
@@ -203,6 +218,9 @@ const updateAuthorController = (req, res) => {
 
       return res.status(200).json(updated);
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('PUT /authors/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -211,10 +229,15 @@ const updateAuthorController = (req, res) => {
 // Deletar um autor existente
 const deleteAuthorController = (req, res) => {
     try {
+      const { validateId } = require('./validation');
       const { id } = req.params;
+      validateId(id);
       deleteAuthor(id);
       return res.status(204).send();
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('DELETE /authors/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -235,7 +258,9 @@ const listNotesByBookController = (req, res) => {
 // Pegar uma nota específica (pelo ID)
 const getNoteByIdController = (req, res) => {
     try {
+      const { validateId } = require('./validation');
       const { id } = req.params;
+      validateId(id);
       const note = getNoteById(id);
       
       if (!note) {
@@ -249,6 +274,9 @@ const getNoteByIdController = (req, res) => {
       
       return res.status(200).json(note);
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('GET /notes/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -257,15 +285,16 @@ const getNoteByIdController = (req, res) => {
 // Criar uma nova nota
 const createNoteController = (req, res) => {
     try {
-      const { bookId, content, pageNumber } = req.body || {};
-      
-      if (!bookId || !content) {
-        return res.status(400).json({ error: 'bookId and content are required' });
-      }
+      const { validateNote } = require('./validation');
+      validateNote(req.body || {});
 
+      const { bookId, content, pageNumber } = req.body;
       const newNote = createNote(bookId, req.user.userId, content, pageNumber || null);
       return res.status(201).json(newNote);
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('POST /notes error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -274,16 +303,18 @@ const createNoteController = (req, res) => {
 // Atualizar uma nota existente
 const updateNoteController = (req, res) => {
     try {
+      const { validateNote, validateId } = require('./validation');
       const { id } = req.params;
-      const { content, pageNumber } = req.body || {};
-      
-      if (!content) {
-        return res.status(400).json({ error: 'content is required' });
-      }
+      validateId(id);
+      validateNote(req.body || {});
 
+      const { content, pageNumber } = req.body;
       const updated = updateNote(id, req.user.userId, content, pageNumber || null);
       return res.status(200).json(updated);
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('PUT /notes/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
@@ -292,10 +323,15 @@ const updateNoteController = (req, res) => {
 // Deletar uma nota existente
 const deleteNoteController = (req, res) => {
     try {
+      const { validateId } = require('./validation');
       const { id } = req.params;
+      validateId(id);
       deleteNote(id, req.user.userId);
       return res.status(204).send();
     } catch (err) {
+      if (err instanceof ValidationError) {
+        return res.status(400).json({ error: err.message, field: err.field });
+      }
       console.error('DELETE /notes/:id error:', err);
       return res.status(500).json({ error: err.message || 'Internal server error' });
     }
