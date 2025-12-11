@@ -1,7 +1,9 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
 const { ApolloServer } = require('apollo-server-express');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
+const swaggerSpec = require('./swagger');
 const { expressAuth } = require('./auth');
 const { 
   registerUserController,
@@ -87,6 +89,14 @@ async function start() {
   let app = express();
   app.use(express.json());
 
+  // Setup Swagger UI
+  app.use('/api-docs', swaggerUi.serve);
+  app.get('/api-docs', swaggerUi.setup(swaggerSpec, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  }));
+
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -97,7 +107,7 @@ async function start() {
   server.applyMiddleware({ app, path: '/graphql' });
 
   app.get('/', (req, res) => {
-    res.send('Welcome to the Bookshelf API. Go to /graphql for GraphQL playground.');
+    res.send('Welcome to the Bookshelf API. Go to /graphql for GraphQL playground or /api-docs for REST API documentation.');
   });
 
   app = await loadMethods(app);
@@ -105,6 +115,7 @@ async function start() {
   const port = process.env.PORT || 4000;
   app.listen(port, () => {
     console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
+    console.log(`📚 Swagger UI available at http://localhost:${port}/api-docs`);
   });
 }
 

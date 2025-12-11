@@ -17,7 +17,9 @@
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^9.2.2",
     "graphql": "^16.8.0",
-    "jsonwebtoken": "^8.5.1"
+    "jsonwebtoken": "^8.5.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "jest": "^30.2.0",

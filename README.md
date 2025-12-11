@@ -39,6 +39,7 @@ npm run dev
 O servidor estará disponível em:
 - **REST**: http://localhost:4000
 - **GraphQL**: http://localhost:4000/graphql
+- **Swagger UI**: http://localhost:4000/api-docs (documentação interativa dos endpoints REST)
 
 ### Opção 2: Docker
 
@@ -137,6 +138,34 @@ src/__tests__/
 ├── userController.test.js         → Testes de integração (CRUD)
 └── bookController.test.js         → Testes de integração (CRUD)
 ```
+
+---
+
+## Documentação da API (Swagger/OpenAPI)
+
+A API possui documentação interativa e automática usando **Swagger UI** e **OpenAPI 3.0**:
+
+### Acessar a documentação
+
+```
+http://localhost:4000/api-docs
+```
+
+### Características
+
+- ✅ **Documentação Interativa** — Teste os endpoints diretamente no navegador
+- ✅ **Autenticação JWT** — Copie seu token e use em todos os endpoints
+- ✅ **Exemplos de Requisição e Resposta** — Veja estrutura de dados completa
+- ✅ **Validações Documentadas** — Entenda todas as regras de negócio
+- ✅ **Auto-gerada** — Atualiza automaticamente com o código
+
+### Testar um Endpoint no Swagger
+
+1. Vá para **http://localhost:4000/api-docs**
+2. Clique em **"Authorize"** (cadeado no canto superior direito)
+3. Cole seu JWT token obtido via `/login` ou `/register`
+4. Clique em um endpoint para expandir
+5. Clique em **"Try it out"** e envie a requisição
 
 ---
 
@@ -680,12 +709,12 @@ npm start
 - [x] Desmembração de validações em arquivos individuais (implementada)
 - [x] Docker + docker-compose (implementado)
 - [x] Testes automatizados (Jest + Supertest) — 61 testes passando ✅
+- [x] Swagger/OpenAPI docs — Documentação interativa em /api-docs ✅
 - [ ] Paginação em listas
 - [ ] Filtros avançados
 - [ ] Relacionamentos completos GraphQL
 - [ ] Logging estruturado (Winston/Pino)
 - [ ] Rate limiting (express-rate-limit)
-- [ ] Swagger/OpenAPI docs
 
 ---
 
