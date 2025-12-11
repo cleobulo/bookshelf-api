@@ -3,7 +3,13 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 
 // Inicializa o banco de dados SQLite
-const dbPath = path.join(__dirname, '..', 'bookshelf.db');
+let dbPath;
+if (process.env.DATABASE_PATH) {
+  dbPath = process.env.DATABASE_PATH;
+} else {
+  dbPath = path.join(__dirname, '..', 'data', 'bookshelf.db');
+}
+
 const db = new Database(dbPath);
 
 // Ativa foreign keys
@@ -236,4 +242,5 @@ module.exports = {
   createNote,
   updateNote,
   deleteNote,
+  initDb,
 };

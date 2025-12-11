@@ -99,6 +99,47 @@ Quando a validação falha, a API retorna **400 Bad Request** com detalhes:
 
 ---
 
+## Testes Automatizados
+
+A API possui **61 testes automatizados** usando **Jest** + **Supertest**:
+
+### Executar testes
+
+```bash
+# Rodar todos os testes
+npm test
+
+# Modo watch (reexecuta ao mudar código)
+npm run test:watch
+
+# Com cobertura de código
+npm run test:coverage
+```
+
+### Cobertura de testes
+
+- ✅ **Validações** — 26 testes para regras de negócio
+- ✅ **Usuários** — Autenticação, criação, validação de credenciais
+- ✅ **Livros** — CRUD completo, relações com autores
+- ✅ **Autores** — CRUD completo
+- ✅ **Notas** — CRUD completo, relações com livros
+
+### Estrutura de testes
+
+```
+src/__tests__/
+├── setup.js                       → Configuração global
+├── testDatabase.js                → Banco em memória para testes
+├── userValidations.test.js        → Testes de validação de usuários
+├── bookValidations.test.js        → Testes de validação de livros
+├── authorValidations.test.js      → Testes de validação de autores
+├── noteValidations.test.js        → Testes de validação de notas
+├── userController.test.js         → Testes de integração (CRUD)
+└── bookController.test.js         → Testes de integração (CRUD)
+```
+
+---
+
 ## Arquitetura e Padrões
 
 ### Padrão MVC (Model-View-Controller)
@@ -638,7 +679,7 @@ npm start
 - [x] Desmembração de resolvers em arquivos individuais (implementada)
 - [x] Desmembração de validações em arquivos individuais (implementada)
 - [x] Docker + docker-compose (implementado)
-- [ ] Testes automatizados (Jest + Supertest)
+- [x] Testes automatizados (Jest + Supertest) — 61 testes passando ✅
 - [ ] Paginação em listas
 - [ ] Filtros avançados
 - [ ] Relacionamentos completos GraphQL
